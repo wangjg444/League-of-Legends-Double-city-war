@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>双城之战 · ARCANE | 粉丝致敬站</title>
+  <meta name="description" content="英雄联盟：双城之战（ARCANE）第一、二季 粉丝致敬页面 — 世界观、角色全家福互动、杀青群聊。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235cc8ff'/%3E%3Cstop offset='1' stop-color='%23ff5c8a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='16,2 28,9 28,23 16,30 4,23 4,9' fill='none' stroke='url(%23g)' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='url(%23g)'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="app" v-cloak>
+
+  <!-- 流动背景 -->
+  <div class="bg-fx">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+    <div class="orb o4"></div>
+    <div class="hex" v-for="(h, i) in hexes" :key="'hx' + i" :style="{
+      left: h.left + '%', width: h.size + 'px', height: h.size + 'px',
+      background: h.color, animationDuration: h.dur + 's', animationDelay: h.delay + 's',
+      clipPath: 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)'
+    }"></div>
+  </div>
+  <div class="grain"></div>
+
+  <!-- 顶部快捷导航 -->
+  <nav class="nav">
+    <div class="brand" @click="goTo('intro')">
+      <svg class="hex-logo" viewBox="0 0 32 32">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#5cc8ff"/><stop offset="1" stop-color="#ff5c8a"/>
+        </linearGradient></defs>
+        <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="none" stroke="url(#lg)" stroke-width="2.5"/>
+        <circle cx="16" cy="16" r="4" fill="url(#lg)"/>
+      </svg>
+      <div><b>双城之战</b><span>ARCANE · FAN SITE</span></div>
+    </div>
+    <div class="nav-links">
+      <a @click.prevent="goTo('intro')">background introduce<i>背景介绍</i></a>
+      <a @click.prevent="goTo('role')">role<i>角色</i></a>
+      <a @click.prevent="goTo('FOOTER')">FOOTER<i>页脚</i></a>
+      <a class="chat-link" @click.prevent="openChat">chat<i>杀青群聊 ✦</i></a>
+    </div>
+  </nav>
+
+  <!-- ============ 头部 · background introduce ============ -->
+  <section id="intro" class="shell">
+    <div class="hero">
+      <div class="hero-main">
+        <div class="kicker">ARCANE · League of Legends</div>
+        <h1 class="title">双城之战</h1>
+        <p class="subtitle">皮尔特沃夫的光，祖安的雾，一对姐妹被时代推到两端的命运——英雄联盟《双城之战》两季全收录。</p>
+        <div class="season-chips">
+          <span class="chip s1"><span class="dot"></span>SEASON 1 · 2021</span>
+          <span class="chip s2"><span class="dot"></span>SEASON 2 · 2024</span>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="hero-frame"></div>
+        <div class="hero-frame-tag">VI &amp; JINX</div>
+      </div>
+    </div>
+
+    <div class="intro-grid">
+      <article class="seg" v-for="(s, i) in intros" :key="s.title" tabindex="0">
+        <span class="no">0{{ i + 1 }}</span>
+        <span class="tag">{{ s.tag }}</span>
+        <h3>{{ s.title }}</h3>
+        <p>{{ s.text }}</p>
+        <div class="peek" :style="{ backgroundImage: 'url(' + s.img + ')' }">
+          <span class="peek-tag">{{ s.imgTag }}</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ banner · role 全家福 ============ -->
+  <section id="role" class="shell">
+    <div class="section-head">
+      <div class="kicker">role · 全家福</div>
+      <h2>把光标放到 TA 身上</h2>
+      <div class="hint"><span class="twinkle">✦</span> 悬停角色：从一点亮起，流光环绕轮廓 —— 0.5 秒后弹出角色卡片</div>
+    </div>
+
+    <div class="banner" ref="banner">
+      <div class="banner-bg"></div>
+      <div class="banner-inner">
+        <div class="stage" ref="stage">
+          <img class="poster" src="assets/img/poster.jpg" alt="双城之战 全家福海报">
+          <div class="hotspot" v-for="c in chars" :key="c.id"
+               :style="hsStyle(c)" :class="{ on: hovered === c.id }"
+               @mouseenter="onEnter(c)" @mouseleave="onLeave(c)" @click.stop="onTap(c)">
+            <div class="halo"><div class="core"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-layer">
+        <div class="role-card" v-if="card" :style="cardStyle">
+          <transition name="pop" appear>
+            <div class="rc-inner" :style="glowStyle(cardChar.color)">
+              <button class="rc-x" @click.stop="closeCard" aria-label="关闭卡片">✕</button>
+              <div class="rc-name">{{ cardChar.name }}</div>
+              <span class="rc-en">{{ cardChar.en }}</span>
+              <span class="rc-role">{{ cardChar.role }}</span>
+              <p class="rc-quote">{{ cardChar.quote }}</p>
+              <p class="rc-desc">{{ cardChar.desc }}</p>
+            </div>
+          </transition>
+        </div>
+      </div>
+    </div>
+
+    <div class="banner-tip">
+      <i v-for="c in chars" :key="'t' + c.id">
+        <span class="ld" :style="{ background: c.color, boxShadow: '0 0 10px ' + c.color }"></span>{{ c.name }}
+      </i>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer id="FOOTER" class="shell">
+    <div class="footer-panel">
+      <div class="farewell">感谢体验 · 后会有期</div>
+      <p class="farewell-sub">双城的故事，到这里正式杀青。愿你也带走一点皮尔特沃夫的光，和一点祖安的不驯。再见不是散场，是下一次开机。</p>
+      <div class="cast-dots">
+        <span v-for="(c, i) in chars" :key="'d' + c.id"
+              :style="{ background: c.color, boxShadow: '0 0 14px ' + c.color, animationDelay: (i * 0.23) + 's' }"></span>
+      </div>
+      <div class="copy">
+        <b>版权声明 COPYRIGHT</b><br>
+        《英雄联盟：双城之战》（ARCANE: League of Legends）系列名称、角色形象及全部美术素材版权归
+        Riot Games、Netflix 与 Fortiche Production 所有。<br>
+        本页面为非商业性质的粉丝学习演示作品；图片素材取自公开资料库（TMDB），仅作展示用途，如有侵权请联系删除。<br>
+        © 2026 ARCANE FAN SITE · Made with Vue 3
+      </div>
+      <a class="back-top" @click.prevent="goTo('intro')">回到开头 ↑ BACK TO TOP</a>
+    </div>
+  </footer>
+
+  <!-- ============ chat · 杀青群聊弹窗 ============ -->
+  <transition name="fade">
+    <div class="chat-mask" v-if="chatOpen" @click.self="closeChat">
+      <div class="chat-box">
+        <aside class="chat-rail">
+          <div class="rail-title">杀青派对</div>
+          <div class="rail-sub">戏里恩怨 · 戏外干杯</div>
+          <div class="cc" v-for="c in chatChars" :key="c.id" :class="{ on: chatId === c.id }"
+               :style="{ '--c': c.color }" @click="selectChar(c)">
+            <div class="avatar" :style="avatarStyle(c)"></div>
+            <div><b>{{ c.name }}</b><span>{{ c.role }}</span></div>
+          </div>
+        </aside>
+        <div class="chat-main" v-if="chatChar">
+          <div class="chat-head" :style="{ '--c': chatChar.color }">
+            <div class="avatar" :style="avatarStyle(chatChar)"></div>
+            <div class="who"><b>{{ chatChar.name }}</b><span>在线 · 杀青派对</span></div>
+            <button class="x-btn" @click="closeChat" aria-label="关闭聊天">✕</button>
+          </div>
+          <div class="chat-msgs" ref="msgs">
+            <div class="msg ai" v-for="(m, i) in messages" :key="i" :style="{ '--c': chatChar.color }">
+              {{ m.text }}<span class="stamp">{{ m.stamp }}</span>
+            </div>
+            <div class="msg ai typing" v-if="typing" :style="{ '--c': chatChar.color }"><i></i><i></i><i></i></div>
+          </div>
+          <div class="quick-row" :style="{ '--c': chatChar.color }">
+            <button v-for="q in quicks" :key="q" @click="send(q)">{{ q }}</button>
+          </div>
+          <div class="chat-input" :style="{ '--c': chatChar.color }">
+            <input v-model="draft" :placeholder="'和 ' + chatChar.name + ' 说点什么……'" @keyup.enter="send()">
+            <button class="send-btn" @click="send()">发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- 关闭聊天后的小回执 -->
+  <transition name="fade">
+    <div class="toast" v-if="toast">{{ toast }}</div>
+  </transition>
+
+</div>
+<script src="assets/js/vue.global.prod.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
